@@ -5,9 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Core;
+using Windows.Foundation;
 using Windows.System;
+using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Popups;
+using Windows.UI.ViewManagement;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 
 namespace MacroSource.Toolkit.Uwp
 {
@@ -43,6 +48,51 @@ namespace MacroSource.Toolkit.Uwp
             messageDialog.Commands.Add(new UICommand(okButtonText, command => handler()));
             messageDialog.Commands.Add(new UICommand(cancelButtonText));
             await messageDialog.ShowAsync();
+        }
+
+        
+        public static Color GetAccentColor()
+        {
+            if (Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
+            {
+                return (Color)Application.Current.Resources["SystemAccentColor"];
+            }
+            else
+            {
+                return new UISettings().GetColorValue(UIColorType.Accent);
+            }
+        }
+
+
+        public static void SetWindowLaunchSize(int height, int width)
+        {
+            ApplicationView.PreferredLaunchViewSize = new Size { Height = height, Width = width };
+            ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
+        }
+
+        /// <summary>
+        /// 在新窗口中显示页面
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public async void ShowWindow<T>() where T : Page, new()
+        {
+            CoreApplicationView newCoreView = CoreApplication.CreateNewView();
+            ApplicationView newAppView = null;
+            int mainViewId = ApplicationView.GetApplicationViewIdForWindow(
+              CoreApplication.MainView.CoreWindow);
+            await newCoreView.Dispatcher.RunAsync(
+              CoreDispatcherPriority.Normal,
+              () =>
+              {
+                  newAppView = ApplicationView.GetForCurrentView();
+                  Window.Current.Content = new T();
+                  Window.Current.Activate();
+              });
+            await ApplicationViewSwitcher.TryShowAsStandaloneAsync(
+              newAppView.Id,
+              ViewSizePreference.UseHalf,
+              mainViewId,
+              ViewSizePreference.UseHalf);
         }
     }
 }

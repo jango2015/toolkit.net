@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Devices.Geolocation;
+using Windows.Devices.Input;
+using Windows.Graphics.Display;
+using Windows.Networking.Connectivity;
 
 namespace MacroSource.Toolkit.Uwp
 {
@@ -19,5 +22,32 @@ namespace MacroSource.Toolkit.Uwp
             }
             return null;
         }
+
+        public static bool HasInternetConnection()
+        {
+            ConnectionProfile connections = NetworkInformation.GetInternetConnectionProfile();
+            bool internet = connections != null && 
+                connections.GetNetworkConnectivityLevel() == NetworkConnectivityLevel.InternetAccess;
+            return internet;
+        }
+
+        public static int GetScreenHeight()
+        {
+            var rect = PointerDevice.GetPointerDevices().Last().ScreenRect;
+            var scale = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
+            return (int)(rect.Height * scale);
+        }
+
+        public static int GetScreenWidth()
+        {
+            var rect = PointerDevice.GetPointerDevices().Last().ScreenRect;
+            var scale = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
+            return (int)(rect.Width * scale);
+        }
+
+        //public static void MakePhoneCall(string phoneNumber, string displayName)
+        //{
+        //    Windows.ApplicationModel.Calls.PhoneCallManager.ShowPhoneCallUI(phoneNumber, displayName);
+        //}
     }
 }
